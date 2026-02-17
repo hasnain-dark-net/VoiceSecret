@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+🎵 VoiceSecret
+Record + Embed + Extract secret messages in audio files
+Supports WAV, MP3, ACC (any format ffmpeg can handle)
+By: Hasnain Dark Net
+"""
+
 import os
 import subprocess
 import wave
@@ -37,7 +46,6 @@ def big_banner():
    \   /| |  | | |  | | | |   | |  | |\___ \|  __|  
     | | | |__| | |__| | | |___| |__| |____) | |____ 
     |_|  \____/ \____/  |______\____/|_____/|______|
-                                                  
 {CYAN}Ultimate Voice Secret Tool
 Record + Embed + Extract Hidden Messages
 By: Hasnain Dark Net
@@ -82,7 +90,11 @@ def convert_to_pcm(input_file):
         "-ar", "44100",
         converted_file
     ]
-    subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    except subprocess.CalledProcessError:
+        type_print(f"{RED}❌ Failed to convert {input_file} to PCM. Make sure ffmpeg is installed and the file exists.{RESET}")
+        sys.exit(1)
     return converted_file
 
 # ---------- Embed Message ----------
@@ -99,6 +111,7 @@ def embed_message(input_file, output_file, message):
 
     if len(binary) > len(frames):
         type_print(f"{RED}❌ Message too long for this audio!{RESET}")
+        os.remove(pcm_file)
         return
 
     for i in range(len(binary)):
@@ -141,10 +154,13 @@ def main():
     if record_option == "y":
         input_audio = record_audio()
     elif record_option == "n":
-        input_audio = input(f"{CYAN}Enter existing audio file: {RESET}")
+        input_audio = input(f"{CYAN}Enter existing audio file path: {RESET}")
+        if not os.path.exists(input_audio):
+            type_print(f"{RED}❌ File does not exist! Exiting...{RESET}")
+            sys.exit(1)
     else:
-        type_print(f"{RED}Invalid option! Exiting...{RESET}")
-        exit()
+        type_print(f"{RED}❌ Invalid option! Exiting...{RESET}")
+        sys.exit(1)
 
     type_print(f"""
 {YELLOW}1️⃣ Embed Message
@@ -159,7 +175,7 @@ def main():
     elif choice == "2":
         extract_message(input_audio)
     else:
-        type_print(f"{RED}Invalid choice! Exiting...{RESET}")
+        type_print(f"{RED}❌ Invalid choice! Exiting...{RESET}")
 
 if __name__ == "__main__":
     main()
